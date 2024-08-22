@@ -12,7 +12,8 @@ namespace Game.Creator
 
         public List<GridArea> GetGridArea() => gridAreaList;
 
-        public GameCreator(BaseGameModel game, GridCreator creator)
+       
+        public GameCreator(BaseGameModel game, GridCreator creator, bool isLoad)
         {
             int weight = game.weight;
             int height = game.height;
@@ -23,8 +24,12 @@ namespace Game.Creator
             int gridCount = weight * height;
 
             gridAreaList.Clear();
+            List<int> gameMap;
 
-            List<int> gameMap = CreateRandomMap(gridCount);
+            if (!isLoad)
+                gameMap = CreateRandomMap(gridCount);
+            else
+                gameMap = GameManager.ins.GetRecordList();
 
 
             for (int i = 0; i < gameMap.Count; i++)
@@ -39,6 +44,7 @@ namespace Game.Creator
                     gridObject.transform.localScale = new Vector3(gridScale, gridScale, 1f);
                     cell = gridObject.GetComponent<Cell>();
                     cell.SetValue(gameMap[i]);
+                    cell.SetText(gameMap[i]);
                     cell.SetIndex(i);
                 }
 

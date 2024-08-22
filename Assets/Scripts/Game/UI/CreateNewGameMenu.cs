@@ -92,7 +92,6 @@ namespace Game.UI
 
             game.height = height;
             game.weight = weight;
-            game.isRecord = record;
             return game;
         }
 
@@ -101,7 +100,6 @@ namespace Game.UI
             ClassicGame game = new ClassicGame();
             game.weight = 3;
             game.height = 3;
-            game.isRecord = false;
             return game;
         }
     }

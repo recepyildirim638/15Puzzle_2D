@@ -1,4 +1,5 @@
 using Game.Model;
+using Game.UI;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,7 +11,7 @@ namespace Game.GameModel
         public string name = "default";
         public int weight = 3;
         public int height = 3;
-        public bool isRecord = false;
+        public GameType gameType;
 
         public int GetSize() => weight * height;
         public abstract bool Goal(List<GridArea> gridAreaList);

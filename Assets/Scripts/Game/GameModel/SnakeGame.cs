@@ -1,5 +1,6 @@
 using Game.GameModel;
 using Game.Model;
+using Game.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,6 +13,7 @@ namespace Game.GameModel
         public SnakeGame()
         {
             name = "SNAKE";
+            gameType = GameType.Snake;
         }
         public override bool Goal(List<GridArea> gridAreaList)
         {

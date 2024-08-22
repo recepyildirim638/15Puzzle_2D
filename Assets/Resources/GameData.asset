@@ -12,15 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6826d030869014b4a875e5c26f8e97fc, type: 3}
   m_Name: GameData
   m_EditorClassIdentifier: 
-  playerData:
-    level: 0
-    currentHealt: 0
-    moneyValue: 0
-  levelData:
-    level: 0
-    totalLevel: 0
-    realLevel: 0
-  mainData:
-    music: 0
-    sound: 0
-    vibration: 0
+  settingsData:
+    cellColor: 0
+    backgroundColor: 0
+  recodDatas:
+  - id: 0
+    gameType: 0
+    weight: 0
+    height: 0
+    tableList: 
+    moveCount: 0
+    playTime: 0
+    day: 
+    complated: 0

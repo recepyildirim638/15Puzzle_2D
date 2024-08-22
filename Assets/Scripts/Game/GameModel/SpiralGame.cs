@@ -1,4 +1,5 @@
 using Game.Model;
+using Game.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace Game.GameModel
         public SpiralGame()
         {
             name = "SPIRAL";
+            gameType = GameType.Spiral;
         }
         public override bool Goal(List<GridArea> gridAreaList)
         {

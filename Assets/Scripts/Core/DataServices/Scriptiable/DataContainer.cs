@@ -20,6 +20,7 @@ namespace Core.DataServices.Scriptiable
             settingsData.cellColor = 0;
             settingsData.backgroundColor = 0;
 
+            recodDatas.Clear();
 
             PlayerPrefs.DeleteAll();
             SaveManager.SaveGameData(this);

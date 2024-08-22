@@ -7,6 +7,8 @@ namespace Game.Manager
     public class ActionManager
     {
         public static Action<Color> ChangeCellColor {  get;  set; }
+
+        public static Action LoadGame { get; set; }
     }
 }
 

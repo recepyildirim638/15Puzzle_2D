@@ -14,7 +14,7 @@ namespace Game.Model
        
         [SerializeField] private int index;
 
-        private int value;
+        [SerializeField] private int value;
 
         [SerializeField] private TMP_Text valueText;
         [SerializeField] private SpriteRenderer spriteRenderer;

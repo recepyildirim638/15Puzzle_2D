@@ -1,4 +1,5 @@
 using Game.Model;
+using Game.UI;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,6 +11,7 @@ namespace Game.GameModel
         public ClassicGame()
         {
             name = "CLASSIC";
+            gameType = GameType.Classic;
         }
 
         public override bool Goal(List<GridArea> gridAreaList)

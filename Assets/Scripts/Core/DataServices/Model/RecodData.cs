@@ -10,6 +10,7 @@ namespace Core.DataServices.Model
     [Serializable]
     public class RecodData 
     {
+        public int id;
         public GameType gameType;
         public int weight;
         public int height;
@@ -17,6 +18,7 @@ namespace Core.DataServices.Model
         public int moveCount;
         public float playTime;
         public string day;
+        public bool complated;
     }
 
 }

@@ -8,6 +8,7 @@ using System.Collections;
 using Game.Creator;
 using TMPro;
 using Game.UI;
+using Core.DataServices.Model;
 
 namespace Game.Manager
 {
@@ -16,20 +17,26 @@ namespace Game.Manager
         public static GameManager ins;
 
         [SerializeField] GridCreator creator;
+        [SerializeField] RecordManager recordManager;
+
 
         [SerializeField] List<GridArea> gridAreaList;
 
         [SerializeField] InGameMenuDetail gamedetail;
+
         private BaseGameModel mainGame;
 
-        
         private int moveCount = 0;
         private float playTime = 0f;
+
+        List<int> recordCellList;
+
 
         private void Awake()
         {
             ins = this;
         }
+        public List<int> GetRecordList() => recordCellList;
 
         public void ResumeGame()
         {
@@ -83,11 +90,11 @@ namespace Game.Manager
 
         public BaseGameModel GetGame() => mainGame;
 
-        public void CreateGame(BaseGameModel game)
+        private void ClearGrids()
         {
-            if(gridAreaList.Count > 0 )
+            if (gridAreaList.Count > 0)
             {
-                for(int i = 0; i < gridAreaList.Count; i++)
+                for (int i = 0; i < gridAreaList.Count; i++)
                 {
                     if (gridAreaList[i].cell != null)
                         gridAreaList[i].cell.gameObject.SetActive(false);
@@ -96,16 +103,73 @@ namespace Game.Manager
                 }
                 gridAreaList.Clear();
             }
+        }
+
+        public void CreateGame(BaseGameModel game)
+        {
+            ClearGrids();
 
             GameStatus.GameStart = false;
             GameStatus.GamePause = false;
             moveCount = 0;
             mainGame = game;
 
-            GameCreator gameCreator = new GameCreator(game, creator);
+            GameCreator gameCreator = new GameCreator(game, creator, false);
             gridAreaList = gameCreator.GetGridArea();
             gamedetail.SetNewGame(game.name);
+            recordManager.NewGameLoad();
+            recordCellList = new List<int>();
+
         }
+
+        public void LoadGame(int id)
+        {
+            ClearGrids();
+            GameStatus.GameStart = false;
+            GameStatus.GamePause = false;
+
+            IGameDataService gameDataService = ServiceLocator.Current.Get<IGameDataService>();
+            List<RecodData> data = gameDataService.GetGameDataManager().GetRecodDatas();
+            RecodData recodData = data[id];
+            recordManager.LoadData(recodData);
+
+            switch (recodData.gameType)
+            {
+                case GameType.Classic:
+                    mainGame = new ClassicGame();
+                    break;
+                case GameType.Snake:
+                    mainGame = new SnakeGame();
+                    break;
+                case GameType.Spiral:
+                    mainGame = new SpiralGame();
+                    break;
+                default:
+                    mainGame = new ClassicGame();
+                    break;
+            }
+
+            mainGame.weight = recodData.weight;
+            mainGame.height = recodData.height;
+            playTime = recodData.playTime;
+            moveCount = recodData.moveCount;
+
+            recordCellList = recodData.tableList;
+            GameCreator gameCreator = new GameCreator(mainGame, creator, true);
+            gridAreaList = gameCreator.GetGridArea();
+            gamedetail.SetNewGame(mainGame.name);
+
+
+            for (int i = 0; i < recordCellList.Count; i++)
+            {
+                if (gridAreaList[i].cell == null)
+                    continue;
+                else
+                    gridAreaList[i].cell.SetValue(recordCellList[i]);
+            }
+
+        }
+
 
         public void Sorgu(Cell cell, MOVE_DIRECTION direction, Action callBack)
         {
@@ -132,10 +196,39 @@ namespace Game.Manager
                 Debug.Log("WIN");
             }
 
+            if (GameStatus.GameStart == false)
+            {
+                GameStatus.GameStart = true;
+
+                RecodData recodData = recordManager.GetRecordData();
+
+                if(recodData == null)
+                {
+                    recordManager.CreateNewRecord(mainGame);
+
+                    for (int i = 0; i < gridAreaList.Count ; i++)
+                        recordCellList.Add(0);
+
+                    recordManager.SetCellList(recordCellList);
+                }
+            }
+
+            for (int i = 0; i < recordCellList.Count ; i++)
+            {
+                if (gridAreaList[i].cell == null)
+                    recordCellList[i] = -1;
+                else
+                    recordCellList[i] = gridAreaList[i].cell.GetValue();
+            }
+                
+
+            recordManager.SetData(moveCount, playTime);
             gamedetail.SetCount(moveCount);
-            GameStatus.GameStart = true;
             DelayCallBack(callBack);
         }
+
+
+        
 
         bool isDelay = false;
         public void DelayCallBack(Action callBack)
