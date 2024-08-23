@@ -8,6 +8,8 @@ using System.Collections;
 using Game.Creator;
 using Game.UI;
 using Core.DataServices.Model;
+using System.Threading.Tasks;
+using UnityEditor;
 
 namespace Game.Manager
 {
@@ -185,21 +187,22 @@ namespace Game.Manager
         }
 
 
-        public void MoveCell(Cell cell, MOVE_DIRECTION direction, Action callBack)
+        public async void MoveCell(Cell cell, MOVE_DIRECTION direction, Action callBack)
         {
             switch (direction)
             {
                 case MOVE_DIRECTION.LEFT:
-                    MoveLeft(cell, callBack);
+                    await MoveLeftAsync(cell);
                     break;
                 case MOVE_DIRECTION.RIGHT:
-                    MoveRight(cell);
+                    // MoveRight(cell);
+                    await MoveRightAsync(cell);
                     break;
                 case MOVE_DIRECTION.UP:
-                    MoveUp(cell, callBack);
+                    await MoveUpAsync(cell);
                     break;
                 case MOVE_DIRECTION.DOWN:
-                    MoveDown(cell, callBack);
+                    await MoveDownAsync(cell);
                     break;
             }
 
@@ -241,17 +244,18 @@ namespace Game.Manager
 
             recordManager.SetData(moveCount, playTime);
             gamedetail.SetCount(moveCount);
-            DelayCallBack(callBack);
+            callBack.Invoke();
         }
 
 
         
         #region RIGTH
-        private void MoveRight(Cell rightCell)
+
+        private async Task MoveRightAsync(Cell rightCell)
         {
-            if (CanMoveRight(rightCell.GetIndex()))
+            if (await CanMoveRightAsync(rightCell.GetIndex()))
             {
-                List<Cell> rightCellList = GetRightCell(rightCell.GetIndex());
+                List<Cell> rightCellList = await GetRightCellAsync(rightCell.GetIndex());
                 int nullCellIndex = rightCellList[0].GetIndex();
                 int currentIndex = nullCellIndex;
                 for (int i = 0; i < rightCellList.Count; i++)
@@ -266,10 +270,9 @@ namespace Game.Manager
                 }
                 gridAreaList[nullCellIndex].cell = null;
             }
+            await Task.Yield();
         }
-
-        //Checking the cell can move to the right
-        private bool CanMoveRight(int index)
+        private async Task<bool> CanMoveRightAsync(int index)
         {
             index++;
 
@@ -278,7 +281,7 @@ namespace Game.Manager
 
             bool result = false;
 
-            while (index % mainGame.weight != 0 )
+            while (index % mainGame.weight != 0)
             {
                 if (gridAreaList[index].cell == null)
                 {
@@ -286,12 +289,11 @@ namespace Game.Manager
                     break;
                 }
                 index++;
+                await Task.Yield();
             }
             return result;
         }
-
-        // the cell can move to the right
-        private List<Cell> GetRightCell(int index)
+        private async Task<List<Cell>> GetRightCellAsync(int index)
         {
             List<Cell> cells = new List<Cell>();
 
@@ -302,19 +304,21 @@ namespace Game.Manager
 
                 cells.Add(gridAreaList[index].cell);
                 index++;
+                await Task.Yield();
             }
 
             return cells;
         }
 
+
         #endregion
 
         #region LEFT
-        private void MoveLeft(Cell leftCell, Action callBack)
+        private async Task MoveLeftAsync(Cell leftCell)
         {
-            if (IsMoveLeft(leftCell.GetIndex()))
+            if (await IsMoveLeftAsync(leftCell.GetIndex()))
             {
-                List<Cell> lefCellList = GetLeftCell(leftCell.GetIndex());
+                List<Cell> lefCellList = await GetLeftCellAsync(leftCell.GetIndex());
 
                 int nullCellIndex = lefCellList[0].GetIndex();
                 int currentIndex = nullCellIndex;
@@ -331,8 +335,9 @@ namespace Game.Manager
                 }
                 gridAreaList[nullCellIndex].cell = null;
             }
+            await Task.Yield();
         }
-        private bool IsMoveLeft(int index)
+        private async Task<bool> IsMoveLeftAsync(int index)
         {
             if(index <= 0)
                 return false;
@@ -350,11 +355,11 @@ namespace Game.Manager
                     result = true;
                     break;
                 }
+                await Task.Yield();
             }
             return result;
         }
-
-        private List<Cell> GetLeftCell(int index)
+        private async Task<List<Cell>> GetLeftCellAsync(int index)
         {
             List<Cell> cells = new List<Cell>();
 
@@ -368,6 +373,7 @@ namespace Game.Manager
 
                 cells.Add(gridAreaList[index].cell);
                 index--;
+                await Task.Yield();
             }
 
             return cells;
@@ -376,11 +382,11 @@ namespace Game.Manager
 
         #region DOWN
 
-        private void MoveDown(Cell downCell, Action callBack)
+        private async Task MoveDownAsync(Cell downCell)
         {
-            if (IsDownMove(downCell.GetIndex()))
+            if (await IsDownMoveAsync(downCell.GetIndex()))
             {
-                List<Cell> downCellList = GetDownCell(downCell.GetIndex());
+                List<Cell> downCellList = await GetDownCellAsync(downCell.GetIndex());
                 int nullIndex = downCellList[0].GetIndex();
 
                 for (int i = downCellList.Count - 1; i >= 0; i--)
@@ -399,8 +405,9 @@ namespace Game.Manager
                 }
                 gridAreaList[nullIndex].cell = null;
             }
+            await Task.Yield();
         }
-        private bool IsDownMove(int index)
+        private async Task<bool> IsDownMoveAsync(int index)
         {
             if ((index + mainGame.weight) >= (mainGame.weight * mainGame.height))
                 return false;
@@ -417,10 +424,11 @@ namespace Game.Manager
                     result = true;
                     break;
                 }
+                await Task.Yield();
             }
             return result;
         }
-        private List<Cell> GetDownCell(int index)
+        private async Task<List<Cell>> GetDownCellAsync(int index)
         {
             List<Cell> cells = new List<Cell>();
 
@@ -433,10 +441,11 @@ namespace Game.Manager
 
                 if (cell != null)  cells.Add(cell);
                 else break;
+
+                await Task.Yield();
             }
             return cells;
         }
-
         private int GetDownIndex(int index)
         {
             if (index + mainGame.weight >= mainGame.weight * mainGame.height)
@@ -449,11 +458,11 @@ namespace Game.Manager
 
         #region UP
 
-        private void MoveUp(Cell cell, Action callBack)
+        private async Task MoveUpAsync(Cell cell)
         {
-            if (IsUpMove(cell.GetIndex()))
+            if (await IsUpMoveAsync(cell.GetIndex()))
             {
-                List<Cell> upCellList = GetUpCell(cell.GetIndex());
+                List<Cell> upCellList = await GetUpCellAsync(cell.GetIndex());
                 int nullIndex = upCellList[0].GetIndex();
 
                 for (int i = upCellList.Count - 1; i >= 0; i--)
@@ -473,7 +482,6 @@ namespace Game.Manager
                 gridAreaList[nullIndex].cell = null;
             }
         }
-
         private int GetUpIndex(int index)
         {
             if (index - mainGame.weight < 0)
@@ -481,8 +489,7 @@ namespace Game.Manager
 
             return index - mainGame.weight;
         }
-
-        private bool IsUpMove(int index)
+        private async Task<bool> IsUpMoveAsync(int index)
         {
             if (index - mainGame.weight < 0)
                 return false;
@@ -499,11 +506,11 @@ namespace Game.Manager
                     result = true;
                     break;
                 }
+                await Task.Yield();
             }
             return result;
         }
-
-        private List<Cell> GetUpCell(int index)
+        private async Task<List<Cell>> GetUpCellAsync(int index)
         {
             List<Cell> cells = new List<Cell>();
 
@@ -516,6 +523,7 @@ namespace Game.Manager
 
                 if(cell != null) cells.Add(cell);
                 else break;
+                await Task.Yield();
             }
           
             return cells;
@@ -523,21 +531,6 @@ namespace Game.Manager
 
         #endregion
 
-
-        private bool isDelay = false;
-        //action result
-        public void DelayCallBack(Action callBack)
-        {
-            if (isDelay == false)
-                StartCoroutine(DelayCallBackEnumerator(callBack));
-        }
-        IEnumerator DelayCallBackEnumerator(Action callBack)
-        {
-            isDelay = true;
-            yield return new WaitForSeconds(.1f);
-            callBack.Invoke();
-            isDelay = false;
-        }
 
     }
 }
