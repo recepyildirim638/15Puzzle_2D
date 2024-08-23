@@ -6,7 +6,6 @@ using static MouseHandler;
 using System;
 using System.Collections;
 using Game.Creator;
-using TMPro;
 using Game.UI;
 using Core.DataServices.Model;
 
@@ -31,26 +30,19 @@ namespace Game.Manager
 
         List<int> recordCellList;
 
+        [SerializeField] GameObject winPanel;
 
         private void Awake()
         {
-            ins = this;
+            ins = this; // Sigelton for accesiable
         }
-        public List<int> GetRecordList() => recordCellList;
 
-        public void ResumeGame()
-        {
-            for (int i = 0; i < gridAreaList.Count; i++)
-            {
-                if (gridAreaList[i].cell != null)
-                {
-                    Cell cell = gridAreaList[i].cell;
-                    cell.transform.position = gridAreaList[i].gridPosition;
-                    cell.SetResumeValue();
-                }
-                   
-            }
-        }
+        #region GETTERS
+        public List<int> GetRecordList() => recordCellList;
+        public BaseGameModel GetGame() => mainGame;
+        #endregion
+
+        
 
         public void HowToPlay()
         {
@@ -75,6 +67,21 @@ namespace Game.Manager
             }
         }
 
+        public void ResumeGame()
+        {
+            for (int i = 0; i < gridAreaList.Count; i++)
+            {
+                if (gridAreaList[i].cell != null)
+                {
+                    Cell cell = gridAreaList[i].cell;
+                    cell.transform.position = gridAreaList[i].gridPosition;
+                    cell.SetResumeValue();
+                }
+            }
+        }
+
+
+        //GAME PLAYE TIMER 
         private void FixedUpdate()
         {
             if (GameStatus.GameStart == true)
@@ -84,27 +91,14 @@ namespace Game.Manager
                     playTime += Time.fixedDeltaTime;
                     gamedetail.SetTimer(playTime);
                 }
-               
             }
         }
 
-        public BaseGameModel GetGame() => mainGame;
+       
 
-        private void ClearGrids()
-        {
-            if (gridAreaList.Count > 0)
-            {
-                for (int i = 0; i < gridAreaList.Count; i++)
-                {
-                    if (gridAreaList[i].cell != null)
-                        gridAreaList[i].cell.gameObject.SetActive(false);
-                    else
-                        continue;
-                }
-                gridAreaList.Clear();
-            }
-        }
+        
 
+        //NEW GAME
         public void CreateGame(BaseGameModel game)
         {
             ClearGrids();
@@ -119,9 +113,11 @@ namespace Game.Manager
             gamedetail.SetNewGame(game.name);
             recordManager.NewGameLoad();
             recordCellList = new List<int>();
+            winPanel.SetActive(false);
 
         }
 
+        //LOAD GAME
         public void LoadGame(int id)
         {
             ClearGrids();
@@ -157,7 +153,9 @@ namespace Game.Manager
             recordCellList = recodData.tableList;
             GameCreator gameCreator = new GameCreator(mainGame, creator, true);
             gridAreaList = gameCreator.GetGridArea();
-            gamedetail.SetNewGame(mainGame.name);
+            gamedetail.SetCount(moveCount);
+            gamedetail.SetTimer(playTime);
+            gamedetail.SetGameText(mainGame.name);
 
 
             for (int i = 0; i < recordCellList.Count; i++)
@@ -170,17 +168,32 @@ namespace Game.Manager
 
         }
 
-
-        public void Sorgu(Cell cell, MOVE_DIRECTION direction, Action callBack)
+        //ALL GRIDS CLEAR FOR CREATE GAME
+        private void ClearGrids()
         {
-            Debug.Log("SORUGU " + direction + " " + cell.GetValue());
+            if (gridAreaList.Count > 0)
+            {
+                for (int i = 0; i < gridAreaList.Count; i++)
+                {
+                    if (gridAreaList[i].cell != null)
+                        gridAreaList[i].cell.gameObject.SetActive(false);
+                    else
+                        continue;
+                }
+                gridAreaList.Clear();
+            }
+        }
+
+
+        public void MoveCell(Cell cell, MOVE_DIRECTION direction, Action callBack)
+        {
             switch (direction)
             {
                 case MOVE_DIRECTION.LEFT:
                     MoveLeft(cell, callBack);
                     break;
                 case MOVE_DIRECTION.RIGHT:
-                    MoveRight(cell, callBack);
+                    MoveRight(cell);
                     break;
                 case MOVE_DIRECTION.UP:
                     MoveUp(cell, callBack);
@@ -190,11 +203,15 @@ namespace Game.Manager
                     break;
             }
 
-
+            //GAME IS COMPLATED
             if (mainGame.Goal(this.gridAreaList))
             {
-                Debug.Log("WIN");
+                recordManager.GameWin();
+                GameStatus.GamePause = true;
+                winPanel.SetActive(true);
+
             }
+
 
             if (GameStatus.GameStart == false)
             {
@@ -229,28 +246,10 @@ namespace Game.Manager
 
 
         
-
-        bool isDelay = false;
-        public void DelayCallBack(Action callBack)
-        {
-            if (isDelay == false)
-                StartCoroutine(DelayCallBackEnumerator(callBack));
-        }
-
-        IEnumerator DelayCallBackEnumerator(Action callBack)
-        {
-            isDelay = true;
-            yield return new WaitForSeconds(.1f);
-            callBack.Invoke();
-            isDelay = false;
-        }
-
-
-
         #region RIGTH
-        private void MoveRight(Cell rightCell, Action callBack)
+        private void MoveRight(Cell rightCell)
         {
-            if (IsMoveRigth(rightCell.GetIndex()))
+            if (CanMoveRight(rightCell.GetIndex()))
             {
                 List<Cell> rightCellList = GetRightCell(rightCell.GetIndex());
                 int nullCellIndex = rightCellList[0].GetIndex();
@@ -267,13 +266,10 @@ namespace Game.Manager
                 }
                 gridAreaList[nullCellIndex].cell = null;
             }
-            else
-            {
-                Debug.Log("SAG GIDEMEZ");
-            }
         }
 
-        private bool IsMoveRigth(int index)
+        //Checking the cell can move to the right
+        private bool CanMoveRight(int index)
         {
             index++;
 
@@ -294,6 +290,7 @@ namespace Game.Manager
             return result;
         }
 
+        // the cell can move to the right
         private List<Cell> GetRightCell(int index)
         {
             List<Cell> cells = new List<Cell>();
@@ -301,9 +298,8 @@ namespace Game.Manager
             while (index + 1 % mainGame.weight != 0)
             {
                 if (gridAreaList[index].cell == null)
-                {
                     break;
-                }
+
                 cells.Add(gridAreaList[index].cell);
                 index++;
             }
@@ -335,10 +331,6 @@ namespace Game.Manager
                 }
                 gridAreaList[nullCellIndex].cell = null;
             }
-            else
-            {
-                Debug.Log("SOL GIDEMEZ");
-            }
         }
         private bool IsMoveLeft(int index)
         {
@@ -358,7 +350,6 @@ namespace Game.Manager
                     result = true;
                     break;
                 }
-                
             }
             return result;
         }
@@ -391,9 +382,7 @@ namespace Game.Manager
             {
                 List<Cell> downCellList = GetDownCell(downCell.GetIndex());
                 int nullIndex = downCellList[0].GetIndex();
-              
-                Debug.Log("DONW " + downCellList.Count);
-              
+
                 for (int i = downCellList.Count - 1; i >= 0; i--)
                 {
                     int downIndex = GetDownIndex(downCellList[i].GetIndex());
@@ -407,34 +396,22 @@ namespace Game.Manager
                         gridAreaList[downIndex].cell = moveCell;
                         moveCount++;
                     }
-                    else
-                    {
-                        Debug.LogError("DOWN INDEX HATASI");
-                    }
                 }
                 gridAreaList[nullIndex].cell = null;
-            }
-            else
-            {
-                Debug.Log("down false");
             }
         }
         private bool IsDownMove(int index)
         {
             if ((index + mainGame.weight) >= (mainGame.weight * mainGame.height))
-            {
                 return false;
-            }
 
             bool result = false;
 
             for (int i = 0; i < mainGame.height; i++)
             {
                 if (index + (i * mainGame.weight) >= mainGame.weight * mainGame.height)
-                {
                     break;
-                }
-
+ 
                 if (gridAreaList[index + (i * mainGame.weight)].cell == null)
                 {
                     result = true;
@@ -454,14 +431,8 @@ namespace Game.Manager
 
                 Cell cell = gridAreaList[index + (i * mainGame.weight)].cell;
 
-                if (cell != null)
-                {
-                    cells.Add(cell);
-                }
-                else
-                {
-                    break;
-                }
+                if (cell != null)  cells.Add(cell);
+                else break;
             }
             return cells;
         }
@@ -498,17 +469,8 @@ namespace Game.Manager
                         gridAreaList[upIndex].cell = moveCell;
                         moveCount++;
                     }
-                    else
-                    {
-                        Debug.LogError("UP INDEX HATASI");
-                    }
                 }
                 gridAreaList[nullIndex].cell = null;
-
-            }
-            else
-            {
-                Debug.Log("up false");
             }
         }
 
@@ -552,20 +514,30 @@ namespace Game.Manager
 
                 Cell cell = gridAreaList[index - (i * mainGame.weight)].cell;
 
-                if(cell != null)
-                {
-                    cells.Add(cell);
-                }
-                else
-                {
-                    break;
-                }
+                if(cell != null) cells.Add(cell);
+                else break;
             }
           
             return cells;
         }
 
         #endregion
+
+
+        private bool isDelay = false;
+        //action result
+        public void DelayCallBack(Action callBack)
+        {
+            if (isDelay == false)
+                StartCoroutine(DelayCallBackEnumerator(callBack));
+        }
+        IEnumerator DelayCallBackEnumerator(Action callBack)
+        {
+            isDelay = true;
+            yield return new WaitForSeconds(.1f);
+            callBack.Invoke();
+            isDelay = false;
+        }
 
     }
 }

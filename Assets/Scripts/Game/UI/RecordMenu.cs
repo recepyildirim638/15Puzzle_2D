@@ -25,9 +25,8 @@ namespace Game.UI
 
         public void ClosePanel()
         {
+            GameStatus.GamePause = false;
             panel.SetActive(false);
-            GameStatus.GamePause = true;
-
         }
 
         public void SetRecords()

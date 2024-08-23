@@ -25,6 +25,11 @@ namespace Game.Manager
             recodData = null;
         }
 
+        public void GameWin()
+        {
+            recodData.complated = true;
+        }
+
         public void LoadData(RecodData data)
         {
             recodData = data;

@@ -58,7 +58,7 @@ public class MouseHandler : MonoBehaviour
                     if (moveDirection != MOVE_DIRECTION.NONE && _activeCell != null)
                     {
                         _isProgses = true;
-                        GameManager.ins.Sorgu(_activeCell, moveDirection, MoveEndCallBack);
+                        GameManager.ins.MoveCell(_activeCell, moveDirection, MoveEndCallBack);
                     }
                 }
             }

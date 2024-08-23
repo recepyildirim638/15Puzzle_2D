@@ -17,7 +17,10 @@ namespace Game.UI
             SetCount(0);
             SetTimer(0f);
         }
-
+        public void SetGameText(string gameType)
+        {
+            gameTypeText.text = gameType;
+        }
         public void SetCount(int cnt)
         {
             moveCountText.text ="Moves "+ cnt.ToString();

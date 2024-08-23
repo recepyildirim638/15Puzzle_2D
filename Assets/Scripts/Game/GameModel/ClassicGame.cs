@@ -35,9 +35,12 @@ namespace Game.GameModel
         {
             List<int> result = new List<int>();
 
-            for (int i = 0;i < GetSize() - 1; i++)
+            for (int i = 0;i < GetSize(); i++)
             {
-                result.Add(i + 1);
+                if(i == GetSize())
+                    result.Add(-1);
+                else
+                    result.Add(i + 1);
             }
             return result;
         }

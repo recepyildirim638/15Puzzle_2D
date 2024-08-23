@@ -19,6 +19,11 @@ namespace Game.UI
 
         private void Start()
         {
+            CreateNewDefaultGame();
+        }
+
+        public void CreateNewDefaultGame()
+        {
             GameManager.ins.CreateGame(GetDefaultGame());
         }
 

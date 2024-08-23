@@ -74,14 +74,6 @@ namespace Game.Creator
                 map[rnd] = map[0];
                 map[0] = temp;
             }
-
-
-            //int[] test = new int[] { 1, 2, 3, 4, 5, 6, -1, 7, 8 };
-            //for (int i = 0; i < map.Count; i++)
-            //{
-            //    map[i] = test[i];
-            //}
-
             return map;
         }
     }
