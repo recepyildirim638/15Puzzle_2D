@@ -248,7 +248,6 @@ namespace Game.Manager
         }
 
 
-        
         #region RIGTH
 
         private async Task MoveRightAsync(Cell rightCell)
@@ -267,10 +266,11 @@ namespace Game.Manager
                     gridAreaList[currentIndex + 1].cell = moveCell;
                     currentIndex++;
                     moveCount++;
+                    await Task.Yield();
                 }
                 gridAreaList[nullCellIndex].cell = null;
             }
-            await Task.Yield();
+           
         }
         private async Task<bool> CanMoveRightAsync(int index)
         {
@@ -332,10 +332,10 @@ namespace Game.Manager
                     gridAreaList[currentIndex - 1].cell = moveCell;
                     currentIndex--;
                     moveCount++;
+                    await Task.Yield();
                 }
                 gridAreaList[nullCellIndex].cell = null;
             }
-            await Task.Yield();
         }
         private async Task<bool> IsMoveLeftAsync(int index)
         {
@@ -401,11 +401,12 @@ namespace Game.Manager
 
                         gridAreaList[downIndex].cell = moveCell;
                         moveCount++;
+                        await Task.Yield();
                     }
                 }
                 gridAreaList[nullIndex].cell = null;
             }
-            await Task.Yield();
+           
         }
         private async Task<bool> IsDownMoveAsync(int index)
         {
@@ -477,6 +478,7 @@ namespace Game.Manager
 
                         gridAreaList[upIndex].cell = moveCell;
                         moveCount++;
+                        await Task.Yield();
                     }
                 }
                 gridAreaList[nullIndex].cell = null;
